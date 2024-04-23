@@ -1,0 +1,836 @@
+package fdsfteng;
+ 
+import java.awt.Color;
+ 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
+ 
+import javax.swing.AbstractAction;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JComboBox;
+import java.awt.event.ItemEvent;
+import javax.swing.JOptionPane;
+ 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+ 
+public class sprint3 implements ActionListener{
+     private JLabel sosLabel;
+     private JLabel boardSizeLabel;
+     private JFrame frame;
+     private JPanel panel;
+     
+     private JComboBox<Integer> boardSize = new JComboBox<Integer>();
+     
+     int size = 3;
+     
+    JButton[][] butArray = new JButton[size][size];
+   
+     int numOfTurns = size*size;
+     int whosTurn = 0;
+     int gameModeSelection;
+     int winnerFound = 0;
+     int pointRed = 0;
+     int pointBlue = 0;
+     
+     JLabel currentTurnLabel = new JLabel("Current turn: Red");
+     JRadioButton simpleModeButton = new JRadioButton("Simple Game", true);
+     JRadioButton generalModeButton = new JRadioButton("General Game");
+     JRadioButton redPlayerButtonS = new JRadioButton("S", true);
+     JRadioButton redPlayerButtonO = new JRadioButton("O");
+     JRadioButton bluePlayerButtonS = new JRadioButton("S");
+     JRadioButton bluePlayerButtonO = new JRadioButton("O", true);
+     JRadioButton computerButtonS = new JRadioButton("Computer");
+     JRadioButton computerButtonO = new JRadioButton("Computer");
+     JButton newGameButton = new JButton( new AbstractAction("New Game") {
+          @Override
+        public void actionPerformed( ActionEvent e ) {
+               for (int i = 0; i < size; i++) {
+                     for (int j = 0; j < size; j++) {
+                          butArray[i][j].setText("");
+                     }
+               }
+               winnerFound = 0;
+               whosTurn = 0;
+               pointRed = 0;
+               pointBlue = 0;
+        }
+     });
+     
+     public sprint3() {
+          
+          try {
+                File outputFile = new File("RecordedMoved.txt");
+                if (outputFile.createNewFile()) {
+                  System.out.println("File created: " + outputFile.getName());
+                } else {
+                  System.out.println("File already exists.");
+                }
+              } catch (IOException e) {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+              }
+          
+          frame = new JFrame();
+          frame.setSize(550, 400);
+          
+          sosLabel = new JLabel("SOS");
+          sosLabel.setBounds(100, 0, 50, 50);
+          
+          panel = new JPanel();
+          panel.setLayout(null);
+          
+          currentTurnLabel.setBounds(220, 300, 150, 50);
+          panel.add(currentTurnLabel);
+ 
+          ButtonGroup GameMode = new ButtonGroup();
+          GameMode.add(simpleModeButton);
+          GameMode.add(generalModeButton);
+          simpleModeButton.setBounds(120, 0, 120, 50);
+          panel.add(simpleModeButton);
+          generalModeButton.setBounds(230, 0, 120, 50);
+          panel.add(generalModeButton);
+          newGameButton.setBounds(420, 310, 100, 30);
+          panel.add(newGameButton);
+         
+          boardSizeLabel = new JLabel("Board Size");
+          boardSizeLabel.setBounds(380, 0, 100, 50);
+          panel.add(boardSizeLabel);
+          
+          boardSize.addItem(3);
+          boardSize.addItem(4);
+          boardSize.addItem(5);
+          boardSize.addItem(6);
+          boardSize.addItem(7);
+          boardSize.addItem(8);
+          boardSize.addItem(9);
+          boardSize.setBounds(450, -20, 75, 100);    
+         panel.add(boardSize);
+          
+          JLabel redLabel = new JLabel("Red Player");
+          redLabel.setBounds(30, 100, 100, 20);
+          panel.add(redLabel);
+          
+          redPlayerButtonS.setBounds(30, 120, 50, 20);
+          panel.add(redPlayerButtonS);
+          redPlayerButtonO.setBounds(30, 150, 50, 20);
+          panel.add(redPlayerButtonO);
+          computerButtonS.setBounds(30, 180, 100, 20);
+          computerButtonS.addActionListener(new ActionListener() {
+               @Override
+               public void actionPerformed(ActionEvent e) {
+                     butArray[0][0].setText("S");
+                     butArray[0][0].setBackground(Color.RED);
+                     butArray[0][0].setForeground(Color.RED);
+                     whosTurn = 1;
+                     currentTurnLabel.setText("Current turn: Blue");
+               }
+          });
+          panel.add(computerButtonS);
+          ButtonGroup redPlayerButtons = new ButtonGroup();
+          redPlayerButtons.add(redPlayerButtonS);
+          redPlayerButtons.add(redPlayerButtonO);
+          redPlayerButtons.add(computerButtonS);
+          
+          JLabel blueLabel = new JLabel("Blue Player");
+          blueLabel.setBounds(450, 100, 100, 20);
+          panel.add(blueLabel);
+          
+          bluePlayerButtonS.setBounds(450, 120, 50, 20);
+          panel.add(bluePlayerButtonS);
+          bluePlayerButtonO.setBounds(450, 150, 50, 20);
+          panel.add(bluePlayerButtonO);
+          computerButtonO.setBounds(450, 180, 100, 20);
+          computerButtonO.addActionListener(new ActionListener() {
+               @Override
+               public void actionPerformed(ActionEvent e) {
+                     if(!redPlayerButtonS.isSelected()) {
+                     butArray[0][1].setText("O");
+                     butArray[0][1].setBackground(Color.BLUE);
+                     butArray[0][1].setForeground(Color.BLUE);
+                     whosTurn = 0;
+                     currentTurnLabel.setText("Current turn: Red");
+                     }
+                     if (computerButtonS.isSelected()) {
+                          computerVComputer();
+                     }
+               }
+          });
+          panel.add(computerButtonO);
+          ButtonGroup bluePlayerButtons = new ButtonGroup();
+          bluePlayerButtons.add(bluePlayerButtonS);
+          bluePlayerButtons.add(bluePlayerButtonO);
+          bluePlayerButtons.add(computerButtonO);
+          
+          panel.add(sosLabel);
+          
+          frame.add(panel);
+          frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+          frame.setTitle("SOS GAME");
+          initializeFrame();
+          frame.setVisible(true);
+ 
+     }
+ 
+     public static void main(String[] args) {
+          new sprint3();
+          
+     }
+     
+     private void initializeFrame() {
+          int boundX = 150;
+          int boundY = 70;
+          for (int i = 0; i < size; i++) {
+               for (int j = 0; j < size; j++) {
+                     butArray[i][j] = new JButton();
+                     butArray[i][j].setBounds(boundX, boundY, 25, 25);
+                     butArray[i][j].addActionListener(this);
+                     panel.add(butArray[i][j]);
+                     boundX += 25;
+               }
+               boundX = 150;
+               boundY += 25;
+          }
+     }
+     
+     @Override
+     public void actionPerformed(ActionEvent e) {
+           try {
+           PrintWriter writer = new PrintWriter("RecordedMoved", "UTF-8");
+               if (simpleModeButton.isSelected()) {
+                     first:
+                          for (int i = 0; i < size; i++) {
+                               for (int j = 0; j < size; j++) {
+                                    if(e.getSource() == butArray[i][j]) { //Find the button that was clicked
+                                         if (whosTurn == 0) {
+                                              if(redPlayerButtonS.isSelected()) {//If red player chooses to S, that's what they are
+                                                   butArray[i][j].setText("S");
+                                                   butArray[i][j].setBackground(Color.RED);
+                                                   butArray[i][j].setForeground(Color.RED);
+                                                   currentTurnLabel.setText("Current turn: Blue");
+                                                   writer.println(i + ", " + j +"\n");
+                                                   //Check for winner
+                                                   winnerFound =checkForWinnerSimple(whosTurn);
+                                                   if (winnerFound == 1)
+                                                         break first;
+                                                   if (winnerFound == 2) {
+                                                         currentTurnLabel.setText("Draw: No Winner!");
+                                                         break first;
+                                                   }
+                                                   //Change to blue player
+                                                   whosTurn = 1;
+                                              }
+                                              else if(bluePlayerButtonS.isSelected()) {
+                                                   butArray[i][j].setText("S");//If blue player chooses to S, that's what they are
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   currentTurnLabel.setText("Current turn: Red");
+                                                   writer.println(i + ", " + j +"\n");
+                                                   winnerFound =checkForWinnerSimple(whosTurn);
+                                                   if (winnerFound == 1)
+                                                         break first;
+                                                   if (winnerFound == 2) {
+                                                         currentTurnLabel.setText("Draw: No Winner!");
+                                                         break first;
+                                                   }
+                                                   whosTurn = 1;
+                                              }
+                                         }
+                                         //
+                                         if (computerButtonO.isSelected()) {
+                                              computerPlayer();
+                                              winnerFound =checkForWinnerSimple(whosTurn);
+                                              if (winnerFound == 1)
+                                                   break first;   
+                                              if (winnerFound == 2) {
+                                                   currentTurnLabel.setText("Draw: No Winner!");
+                                                   break first;
+                                              }
+                                         whosTurn = 0;
+                                         }
+                                         
+                     
+                                         else if (whosTurn == 1) {
+                                              if(bluePlayerButtonS.isSelected()){ //If blue player chooses to S, that's what they are
+                                                   butArray[i][j].setText("S");
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   currentTurnLabel.setText("Current turn: Red");
+                                                   writer.println(i + ", " + j +"\n");
+                                                   winnerFound =checkForWinnerSimple(whosTurn);
+                                                   if (winnerFound == 1)
+                                                         break first;   
+                                                   if (winnerFound == 2) {
+                                                         currentTurnLabel.setText("Draw: No Winner!");
+                                                         break first;
+                                                   }
+                                                   whosTurn = 0;
+                                              }
+                                              else {
+                                                   butArray[i][j].setText("O");//If blue player chooses to O, that's what they are
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   currentTurnLabel.setText("Current turn: Red");
+                                                   writer.println(i + ", " + j +"\n");
+                                                   winnerFound =checkForWinnerSimple(whosTurn);
+                                                   if (winnerFound == 1)
+                                                         break first;   
+                                                   if (winnerFound == 2) {
+                                                         currentTurnLabel.setText("Draw: No Winner!");
+                                                         break first;
+                                                   }
+                                                   whosTurn = 0;
+                                              }
+                                              //
+                                         if (computerButtonS.isSelected()) {
+                                              computerPlayer();
+                                              winnerFound =checkForWinnerSimple(whosTurn);
+                                              if (winnerFound == 1)
+                                                   break first;   
+                                              if (winnerFound == 2) {
+                                                   currentTurnLabel.setText("Draw: No Winner!");
+                                                   break first;   
+                                              }
+                                              whosTurn = 0;
+                                         }
+                                         //
+                                         }
+                                    }
+                               }
+                          }
+               }
+               else { //General Game was selected
+                     first:
+                          for (int i = 0; i < size; i++) {
+                               for (int j = 0; j < size; j++) {
+                                    if(e.getSource() == butArray[i][j]) { //Find the button that was clicked
+                                         if (whosTurn == 0) {
+                                              if(redPlayerButtonS.isSelected()) {//If red player chooses to S, that's what they are
+                                                   butArray[i][j].setText("S");
+                                                   butArray[i][j].setBackground(Color.RED);
+                                                   butArray[i][j].setForeground(Color.RED);
+                                                   currentTurnLabel.setText("Current turn: Blue");
+                                                   writer.println(i + ", " + j +"\n");
+                                                   //Check for winner
+                                                   winnerFound =checkForWinnerGeneral(whosTurn);
+                                                   if (winnerFound == 3)
+                                                         break first;
+                                                   //Change to blue player
+                                                   whosTurn = 1;
+                                                   
+                                              }
+                                              else {
+                                                   butArray[i][j].setText("O");//If red player chooses to O, that's what they are
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   currentTurnLabel.setText("Current turn: Blue");
+                                                   writer.println(i + ", " + j +"\n");
+                                                   winnerFound =checkForWinnerGeneral(whosTurn);
+                                                   if (winnerFound == 4)
+                                                         break first;
+                                                   whosTurn = 1;
+                                              }
+                                              if (computerButtonO.isSelected()) {
+                                                   computerPlayer();
+                                                   winnerFound =checkForWinnerGeneral(whosTurn);
+                                                   if (winnerFound == 1)
+                                                         break first;   
+                                                   if (winnerFound == 2) {
+                                                         currentTurnLabel.setText("Draw: No Winner!");
+                                                         break first;
+                                                   }
+                                                   whosTurn = 0;
+                                              }
+                                         }
+                                         else {
+                                              if(bluePlayerButtonS.isSelected()){ //If blue player chooses to S, that's what they are
+                                                   butArray[i][j].setText("S");
+                                                   butArray[i][j].setBackground(Color.RED);
+                                                   butArray[i][j].setForeground(Color.RED);
+                                                   currentTurnLabel.setText("Current turn: Red");
+                                                   writer.println(i + ", " + j +"\n");
+                                                   winnerFound =checkForWinnerGeneral(whosTurn);
+                                                   if (winnerFound == 3)
+                                                         breakfirst;                                       
+                                                   whosTurn = 0;
+                                              }
+                                              else {
+                                                   butArray[i][j].setText("O");//If blue player chooses to O, that's what they are
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   currentTurnLabel.setText("Current turn: Red");
+                                                   writer.println(i + ", " + j +"\n");
+                                                   winnerFound =checkForWinnerGeneral(whosTurn);
+                                                   if (winnerFound == 4)
+                                                         breakfirst;                                       
+                                                   whosTurn = 0;
+                                              }
+                                         }
+                                         if (computerButtonS.isSelected()) {
+                                              computerPlayer();
+                                              winnerFound =checkForWinnerGeneral(whosTurn);
+                                              if (winnerFound == 1)
+                                                   break first;   
+                                              if (winnerFound == 2) {
+                                                   currentTurnLabel.setText("Draw: No Winner!");
+                                                   break first;
+                                              }
+                                              whosTurn = 0;
+                                         }
+                                    }
+                               }
+                          }
+                     if (winnerFound == 3)
+                          currentTurnLabel.setText("Winner: Red Player!");
+                     if(winnerFound == 4)
+                          currentTurnLabel.setText("Winner: Blue Player!");
+               }
+               writer.close();
+              System.out.println("Successfully wrote to the file.");
+          } catch (IOException e1) {
+               // TODO Auto-generated catch block
+               System.out.println("An error occurred.");
+               e1.printStackTrace();
+          }
+     }
+     
+     int checkForWinnerSimple(int currentPlayer) {
+          int foundWin = 0;
+          //Check row
+          for (int i = 0; i < size; i++) {
+               for (int j = 0; j < size - 2; j++) {
+                     if(butArray[i][j].getText().equals("S")) {
+                          j +=1 ;
+                          if(butArray[i][j].getText().equals("O")) {
+                               j += 1;
+                               if(butArray[i][j].getText().equals("S")) {
+                                    if (currentPlayer == 0) {
+                                         currentTurnLabel.setText("Winner: Red Player!");
+                                         j -= 1;
+                                         butArray[i][j].setBackground(Color.RED);
+                                         butArray[i][j].setForeground(Color.RED);
+                                         j -= 1;
+                                         foundWin = 1;
+                                    }
+                                    else {
+                                         currentTurnLabel.setText("Winner: Blue Player!");
+                                         butArray[i][j].setBackground(Color.BLUE);
+                                         butArray[i][j].setForeground(Color.BLUE);
+                                         j -= 2;
+                                         butArray[i][j].setBackground(Color.BLUE);
+                                         butArray[i][j].setForeground(Color.BLUE);
+                                         foundWin = 1;
+                                    }
+                               }
+                               else
+                                    j -= 2;
+                          }
+                          else
+                               j -= 1;
+                     }
+               }
+          }
+          //Check column
+          for (int i = 0; i < size - 2; i++) {
+               for (int j = 0; j < size; j++) {
+                     if(butArray[i][j].getText().equals("S")) {
+                          i += 1;
+                          if (butArray[i][j].getText().equals("O")) {
+                               i += 1;
+                               if (butArray[i][j].getText().equals("S")) {
+                                    if (currentPlayer == 0) {
+                                         currentTurnLabel.setText("Winner: Red Player!");
+                                         butArray[i][j].setBackground(Color.RED);
+                                         butArray[i][j].setForeground(Color.RED);
+                                         i -= 1;
+                                         butArray[i][j].setBackground(Color.RED);
+                                         butArray[i][j].setForeground(Color.RED);
+                                         i -= 1;
+                                         foundWin = 1;
+                                    }
+                                    else {
+                                         currentTurnLabel.setText("Winner: Blue Player!");
+                                         butArray[i][j].setBackground(Color.BLUE);
+                                         butArray[i][j].setForeground(Color.BLUE);
+                                         i -= 1;
+                                         butArray[i][j].setBackground(Color.BLUE);
+                                         butArray[i][j].setForeground(Color.BLUE);
+                                         i -= 1;
+                                         butArray[i][j].setBackground(Color.BLUE);
+                                         butArray[i][j].setForeground(Color.BLUE);
+                                         foundWin = 1;
+                                    }
+                               }
+                               else
+                                    i -= 2;
+                          }
+                          else
+                               i -= 1;
+                     }
+               }
+          }
+          //Check diagonal right
+          for (int i = 0; i < size-2; i++) {
+               for (int j = 0; j < size-2; j++) {
+                     if(butArray[i][j].getText().equals("S")) {
+                          i += 1;
+                          j += 1;
+                          if(butArray[i][j].getText().equals("O")) {
+                               i += 1;
+                               j += 1;
+                        ​​       if(butArray[i][j].getText().equals("S")) {
+                                    if (currentPlayer == 0) {
+                                         currentTurnLabel.setText("Winner: Red Player!");
+                                         i -= 1;
+                                         j -= 1;
+                                         butArray[i][j].setBackground(Color.RED);
+                                         butArray[i][j].setForeground(Color.RED);
+                                         i -= 1;
+                                         j -= 1;
+                                         foundWin = 1;
+                                    }
+                                    else {
+                                         currentTurnLabel.setText("Winner: Blue Player!");
+                                         butArray[i][j].setBackground(Color.BLUE);
+                                         butArray[i][j].setForeground(Color.BLUE);
+                                         i -= 1;
+                                         j -= 1;
+                                         butArray[i][j].setBackground(Color.BLUE);
+                                         butArray[i][j].setForeground(Color.BLUE);
+                                         i -= 1;
+                                         j -= 1;
+                                         foundWin = 1;
+                                    }
+                               }
+                               else {
+                                    i -= 2;
+                                    j -= 2;
+                               }
+                          }
+                          else {
+                               i -= 1;
+                               j -= 1;
+                          }
+                     }
+               }
+          }
+          //Check diagonal left
+          for (int i = 0; i < size-2; i++) {
+               for (int j = 2; j < size; j++) {
+                     if(butArray[i][j].getText().equals("S")) {
+                          i += 1;
+                          j -= 1;
+                          if(butArray[i][j].getText().equals("O")) {
+                               i += 1;
+                               j -= 1;
+                               if(butArray[i][j].getText().equals("S")) {
+                                    if (currentPlayer == 0) {
+                                         currentTurnLabel.setText("Winner: Red Player!");
+                                         i -= 1;
+                                         j -= 1;
+                                         butArray[i][j].setBackground(Color.RED);
+                                         butArray[i][j].setForeground(Color.RED);
+                                         i -= 1;
+                                         j += 1;
+                                         foundWin = 1;
+                                    }
+                                    else {
+                                         currentTurnLabel.setText("Winner: Blue Player!");
+                                         butArray[i][j].setBackground(Color.BLUE);
+                                         butArray[i][j].setForeground(Color.BLUE);
+                                         i -= 2;
+                                         j += 2;
+                                         butArray[i][j].setBackground(Color.BLUE);
+                                         butArray[i][j].setForeground(Color.BLUE);
+                                         foundWin = 1;
+                                    }
+                               }
+                               else {
+                                    i -= 2;
+                                    j += 2;
+                               }
+                          }
+                          else {
+                               i -= 1;
+                               j += 1;
+                          }
+                     }
+               }
+          }
+          int isNotEmpty = 0;
+          for (int i = 0; i < size; i++) {
+               for (int j = 0; j < size; j++) {
+                     if (!butArray[i][j].getText().isEmpty()) {
+                          isNotEmpty += 1;
+                     }
+               }
+          }
+          if (isNotEmpty == size*size) {
+               foundWin = 2;
+          }
+          return foundWin;
+     }
+     
+     void computerPlayer() {
+          if (computerButtonS.isSelected()) {
+               for (int i = 0; i < size; i++) {
+                     for (int j = 0; j < size; j++) {
+                          if (butArray[i][j].getText().isEmpty()) {
+                               butArray[i][j].setText("S");
+                               butArray[i][j].setBackground(Color.RED);
+                               butArray[i][j].setForeground(Color.RED);
+                               currentTurnLabel.setText("Current turn: Blue");
+                               //winnerFound = checkForWinnerSimple(whosTurn);
+                               i +=size;
+                               j += size;
+                          }
+                     }
+               }
+          }
+          else if (computerButtonO.isSelected()) {
+               for (int i = 0; i < size; i++) {
+                     for (int j = 0; j < size; j++) {
+                          if (butArray[i][j].getText().isEmpty()) {
+                               butArray[i][j].setText("O");
+                               butArray[i][j].setBackground(Color.BLUE);
+                               butArray[i][j].setForeground(Color.BLUE);
+                               currentTurnLabel.setText("Current turn: Red");
+                               //winnerFound = checkForWinnerSimple(whosTurn);
+                               i +=size;
+                               j += size;
+                          }
+                     }
+               }
+          }
+     }
+     void computerVComputer() {
+               if (generalModeButton.isSelected()) {
+                     int isNotEmpty = 0;
+                     while (isNotEmpty < (size*size)-1) {
+                     isNotEmpty = 0;
+                     for (int i = 0; i < size; i++) {
+                          for (int j = 0; j < size; j++) {
+                               if (!butArray[i][j].getText().isEmpty()) {
+                                    isNotEmpty += 1;
+                               }
+                          }
+                     }
+                     if (whosTurn == 0) {
+                          for (int i = 0; i < size; i++) {
+                               for (int j = 0; j < size; j++) {
+                                    if (butArray[i][j].getText().isEmpty()) {
+                                         butArray[i][j].setText("S");
+                                         butArray[i][j].setBackground(Color.RED);
+                                         butArray[i][j].setForeground(Color.RED);
+                                         i +=size;
+                                         j += size;
+                                         whosTurn = 1;
+                                    }
+                               }
+                          }
+                     }
+                     else {
+                          for (int i = 0; i < size; i++) {
+                               for (int j = 0; j < size; j++) {
+                                    if (butArray[i][j].getText().isEmpty()) {
+                                         butArray[i][j].setText("O");
+                                         butArray[i][j].setBackground(Color.BLUE);
+                                         butArray[i][j].setForeground(Color.BLUE);
+                                         i +=size;
+                                         j += size;
+                                         whosTurn = 0;
+                                    }
+                               }
+                          }
+                     }
+               }
+                     int winner = checkForWinnerGeneral(whosTurn);
+                     if (winner == 4)
+                          currentTurnLabel.setText("Winner: Red Player!");
+                     else
+                          currentTurnLabel.setText("Winner: Blue Player!");
+          }
+     }
+     
+     int checkForWinnerGeneral(int currentPlayer) {
+          //Check row
+                     for (int i = 0; i < size; i++) {
+                          for (int j = 0; j < size - 2; j++) {
+                               if(butArray[i][j].getText().equals("S")) {
+                                    j +=1 ;
+                                    if(butArray[i][j].getText().equals("O")) {
+                                         j += 1;
+                                         if(butArray[i][j].getText().equals("S")){
+                                              if (currentPlayer == 0) {
+                                                   j -= 1;
+                                                   butArray[i][j].setBackground(Color.RED);
+                                                   butArray[i][j].setForeground(Color.RED);
+                                                   j -= 1;
+                                                   pointRed += 1;
+                                              }
+                                              else {
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   j -= 2;
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   pointBlue += 1;
+                                              }
+                                         }
+                                         else
+                                              j -= 2;
+                                    }
+                                    else
+                                         j -= 1;
+                               }
+                          }
+                     }
+                     //Check column
+                     for (int i = 0; i < size - 2; i++) {
+                          for (int j = 0; j < size; j++) {
+                               if(butArray[i][j].getText().equals("S")) {
+                                    i += 1;
+                                    if (butArray[i][j].getText().equals("O")) {
+                                         i += 1;
+                                         if (butArray[i][j].getText().equals("S")) {
+                                              if (currentPlayer == 0) {
+                                                   butArray[i][j].setBackground(Color.RED);
+                                                   butArray[i][j].setForeground(Color.RED);
+                                                   i -= 1;
+                                                   butArray[i][j].setBackground(Color.RED);
+                                                   butArray[i][j].setForeground(Color.RED);
+                                                   i -= 1;
+                                                   pointRed += 1;
+                                              }
+                                              else {
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   i -= 1;
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   i -= 1;
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   pointBlue += 1;
+                                              }
+                                         }
+                                         else
+                                              i -= 2;
+                                    }
+                                    else
+                                         i -= 1;
+                               }
+                          }
+                     }
+                     //Check diagonal right
+                     for (int i = 0; i < size-2; i++) {
+                          for (int j = 0; j < size-2; j++) {
+                               if(butArray[i][j].getText().equals("S")) {
+                                    i += 1;
+                                    j += 1;
+                                    if(butArray[i][j].getText().equals("O")) {
+                                         i += 1;
+                                         j += 1;
+                                         if(butArray[i][j].getText().equals("S")){
+                                              if (currentPlayer == 0) {
+                                                   i -= 1;
+                                                   j -= 1;
+                                                   butArray[i][j].setBackground(Color.RED);
+                                                   butArray[i][j].setForeground(Color.RED);
+                                                   i -= 1;
+                                                   j -= 1;
+                                                   pointRed += 1;
+                                              }
+                                              else {
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   i -= 1;
+                                                   j -= 1;
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   i -= 1;
+                                                   j -= 1;
+                                                   pointBlue += 1;
+                                              }
+                                         }
+                                         else {
+                                              i -= 2;
+                                              j -= 2;
+                                         }
+                                    }
+                                    else {
+                                         i -= 1;
+                                         j -= 1;
+                                    }
+                               }
+                          }
+                     }
+                     //Check diagonal left
+                     for (int i = 0; i < size-2; i++) {
+                          for (int j = 2; j < size; j++) {
+                               if(butArray[i][j].getText().equals("S")) {
+                                    i += 1;
+                                    j -= 1;
+                                    if(butArray[i][j].getText().equals("O")) {
+                                         i += 1;
+                                         j -= 1;
+                                         if(butArray[i][j].getText().equals("S")){
+                                              if (currentPlayer == 0) {
+                                                   i -= 1;
+                                                   j -= 1;
+                                                   butArray[i][j].setBackground(Color.RED);
+                                                   butArray[i][j].setForeground(Color.RED);
+                                                   i -= 1;
+                                                   j += 1;
+                                                   pointRed += 1;
+                                              }
+                                              else {
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   i -= 2;
+                                                   j += 2;
+                                                   butArray[i][j].setBackground(Color.BLUE);
+                                                   butArray[i][j].setForeground(Color.BLUE);
+                                                   pointBlue += 1;
+                                              }
+                                         }
+                                         else {
+                                              i -= 2;
+                                              j += 2;
+                                         }
+                                    }
+                                    else {
+                                         i -= 1;
+                                         j += 1;
+                                    }
+                               }
+                          }
+                     }
+                     int winner = 0;
+                     int isNotEmpty = 0;
+                     for (int i = 0; i < size; i++) {
+                          for (int j = 0; j < size; j++) {
+                               if (!butArray[i][j].getText().isEmpty()) {
+                                    isNotEmpty += 1;
+                               }
+                          }
+                     }
+                     if (isNotEmpty == size*size) {
+                          if (pointRed == 0 && pointBlue == 0)
+                               currentTurnLabel.setText("Draw: No Winner!");
+                          if (pointRed > pointBlue)
+                               winner = 3;
+                          if (pointBlue > pointRed)
+                               winner = 4;
+                     }
+                     return winner;
+     }
+}
+
